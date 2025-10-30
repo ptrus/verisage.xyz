@@ -1,49 +1,28 @@
-# Python
+# Development files
+untracked/
+node_modules/
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-
-# Virtual environments
-.venv/
-venv/
-ENV/
-env/
-
-# Environment files
+*.pyc
 .env
-.env.local
+.env.*
 
 # Git
 .git/
 .gitignore
 
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
-# OS
+# Testing
+tests/
+test_*.py
+*_test.py
+test_results/
+
+# Misc
+*.md
+!README.md
 .DS_Store
-Thumbs.db
-
-# uv
-.python-version
-uv.lock
-
-# Documentation
-README.md
-LICENSE
-
-# Development
-.dockerignore
-Dockerfile
-compose.yml
-
-# Build artifacts
-dist/
-build/
-*.egg-info/

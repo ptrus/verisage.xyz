@@ -1,0 +1,24 @@
+{
+  "name": "verisage-frontend",
+  "version": "1.0.0",
+  "description": "Browser frontend for Verisage Oracle with x402 wallet payments",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "viem": "^2.21.54",
+    "x402-fetch": "^0.7.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.6.2",
+    "vite": "^6.0.3"
+  }
+}

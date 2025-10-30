@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verisage.xyz - Multi-LLM Oracle</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Reset and base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif;
+        line-height: 1.6;
+        color: #e4e4e7;
+        background: #0a0a0a;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #111;
+        border-radius: 0;
+        border: 1px solid #222;
+        overflow: hidden;
+      }
+
+      /* Header */
+      header {
+        border-bottom: 1px solid #222;
+        color: white;
+        padding: 60px 30px 40px;
+        text-align: center;
+        position: relative;
+      }
+
+      .header-top {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .api-link {
+        color: #71717a;
+        text-decoration: none;
+        font-size: 0.85em;
+        padding: 8px 16px;
+        border: 1px solid #27272a;
+        border-radius: 0;
+        transition: all 0.2s ease;
+        display: inline-block;
+      }
+
+      .api-link:hover {
+        color: #10b981;
+        border-color: #10b981;
+      }
+
+      .header-wallet {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .header-branding {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        margin-bottom: 12px;
+      }
+
+      .header-logo {
+        width: 65px;
+        height: 65px;
+        margin-right: 12px;
+      }
+
+      header h1 {
+        font-family: 'Space Grotesk', 'Inter', sans-serif;
+        font-size: 3em;
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        color: #e4e4e7;
+      }
+
+      .subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95em;
+        font-weight: 400;
+        color: #71717a;
+        letter-spacing: 0;
+      }
+
+      /* Main content */
+      main {
+        padding: 40px;
+      }
+
+      /* Wallet Section */
+      .wallet-connect-btn {
+        padding: 8px 16px;
+        font-size: 0.85em;
+        background: transparent;
+        border: 1px solid #27272a;
+        color: #71717a;
+        width: auto;
+      }
+
+      .wallet-connect-btn:hover:not(:disabled) {
+        background: transparent;
+        border-color: #10b981;
+        color: #10b981;
+      }
+
+      .wallet-status {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: transparent;
+        border: 1px solid #27272a;
+        border-radius: 0;
+        font-size: 0.75em;
+      }
+
+      .wallet-status.connected {
+        display: flex;
+      }
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .wallet-address {
+        color: #d4d4d8;
+        font-family: monospace;
+        font-size: 1em;
+      }
+
+      .network-badge {
+        padding: 2px 6px;
+        background: transparent;
+        border: 1px solid #27272a;
+        border-radius: 0;
+        font-size: 0.75em;
+        color: #71717a;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      /* Info Box */
+      .info-box {
+        background: transparent;
+        border-left: 2px solid #27272a;
+        padding: 16px 20px;
+        margin-bottom: 40px;
+        border-radius: 0;
+        color: #a1a1aa;
+        font-size: 0.9em;
+      }
+
+      .info-box strong {
+        color: #d4d4d8;
+      }
+
+      /* Buttons */
+      .btn {
+        background: #e4e4e7;
+        color: #0a0a0a;
+        border: none;
+        padding: 14px 28px;
+        font-size: 0.95em;
+        font-weight: 500;
+        border-radius: 0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+      }
+
+      .btn:hover:not(:disabled) {
+        background: #fafafa;
+      }
+
+      .btn:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn.loading .button-text {
+        display: none;
+      }
+
+      .btn:not(.loading) .loading-indicator {
+        display: none;
+      }
+
+      /* Query Form */
+      .query-section {
+        display: block;
+      }
+
+      .submit-notice {
+        text-align: center;
+        margin-top: 8px;
+        margin-bottom: 0;
+        font-size: 0.8em;
+        color: #71717a;
+        display: none;
+      }
+
+      .query-section:not(.active) .submit-notice {
+        display: block;
+      }
+
+      .query-section:not(.active) .btn[type='submit'] {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      .header-wallet .wallet-connect-btn {
+        display: inline-block;
+      }
+
+      .header-wallet .wallet-connect-btn.connected {
+        display: none;
+      }
+
+      .query-section.active .header-wallet .wallet-connect-btn {
+        display: none;
+      }
+
+      label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 12px;
+        color: #a1a1aa;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 16px;
+        background: #0a0a0a;
+        border: 1px solid #27272a;
+        border-radius: 0;
+        font-size: 1em;
+        font-family: inherit;
+        color: #e4e4e7;
+        resize: vertical;
+        transition: border-color 0.2s ease;
+        min-height: 100px;
+      }
+
+      textarea::placeholder {
+        color: #52525b;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #10b981;
+        background: #0f0f0f;
+      }
+
+      .char-counter {
+        text-align: right;
+        font-size: 0.8em;
+        color: #52525b;
+        margin-top: 2px;
+        margin-bottom: 2px;
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #0a0a0a;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-right: 8px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Error Messages */
+      .error-banner {
+        background: transparent;
+        border: 1px solid #ef4444;
+        border-radius: 0;
+        padding: 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .error-icon {
+        font-size: 1.2em;
+        flex-shrink: 0;
+        color: #ef4444;
+      }
+
+      .error-content {
+        flex: 1;
+      }
+
+      .error-content strong {
+        display: block;
+        color: #fca5a5;
+        margin-bottom: 4px;
+        font-size: 0.9em;
+        font-weight: 500;
+      }
+
+      .error-content p {
+        color: #a1a1aa;
+        margin: 0;
+        line-height: 1.5;
+        font-size: 0.9em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+      }
+
+      .error-close {
+        background: none;
+        border: none;
+        color: #71717a;
+        font-size: 1.3em;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+      }
+
+      .error-close:hover {
+        color: #a1a1aa;
+      }
+
+      /* Health Status Banner */
+      .health-banner {
+        background: transparent;
+        border: 1px solid #f59e0b;
+        border-radius: 0;
+        padding: 16px;
+        display: none;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .health-banner.unhealthy {
+        display: flex;
+        border-color: #ef4444;
+      }
+
+      .health-banner.degraded {
+        display: flex;
+        border-color: #f59e0b;
+      }
+
+      .health-icon {
+        font-size: 1.2em;
+        flex-shrink: 0;
+      }
+
+      .health-banner.unhealthy .health-icon {
+        color: #ef4444;
+      }
+
+      .health-banner.degraded .health-icon {
+        color: #f59e0b;
+      }
+
+      .health-content {
+        flex: 1;
+      }
+
+      .health-content strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.9em;
+        font-weight: 500;
+      }
+
+      .health-banner.unhealthy .health-content strong {
+        color: #fca5a5;
+      }
+
+      .health-banner.degraded .health-content strong {
+        color: #fcd34d;
+      }
+
+      .health-content p {
+        color: #a1a1aa;
+        margin: 0;
+        line-height: 1.5;
+        font-size: 0.9em;
+      }
+
+      /* Results */
+      .result-section {
+        display: none;
+      }
+
+      .result-section.active {
+        display: block;
+        margin-top: 40px;
+      }
+
+      .result-card {
+        background: transparent;
+        border: 1px solid #222;
+        border-radius: 0;
+        padding: 0;
+        margin-bottom: 40px;
+        animation: fadeIn 0.3s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-header {
+        background: rgba(255, 255, 255, 0.01);
+      }
+
+      .result-header h3 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        color: #a1a1aa;
+        padding: 24px;
+        border-bottom: 1px solid #222;
+        font-size: 0.85em;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      /* Payment Info */
+      .payment-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 24px;
+        background: rgba(255, 255, 255, 0.01);
+        border-bottom: 1px solid #222;
+        flex-wrap: wrap;
+      }
+
+      .payment-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8em;
+      }
+
+      .payment-label {
+        color: #71717a;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.85em;
+      }
+
+      .payment-value {
+        color: #d4d4d8;
+        font-family: monospace;
+        font-size: 1em;
+      }
+
+      .payment-link {
+        color: #10b981;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .payment-link:hover {
+        border-bottom-color: #10b981;
+      }
+
+      .final-decision {
+        padding: 32px 24px;
+        border-bottom: 1px solid #222;
+        background: rgba(255, 255, 255, 0.005);
+      }
+
+      .final-decision.yes {
+        border-left: 4px solid #10b981;
+      }
+
+      .final-decision.no {
+        border-left: 4px solid #ef4444;
+      }
+
+      .final-decision.uncertain {
+        border-left: 4px solid #f59e0b;
+      }
+
+      .final-decision h4 {
+        font-family: 'Space Grotesk', 'Inter', sans-serif;
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+        color: #e4e4e7;
+        letter-spacing: -0.02em;
+      }
+
+      .confidence-bar {
+        background: #1a1a1a;
+        border-radius: 0;
+        height: 6px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .confidence-fill {
+        background: linear-gradient(90deg, #10b981, #059669);
+        height: 100%;
+        transition: width 0.8s ease;
+      }
+
+      .final-decision.no .confidence-fill {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+      }
+
+      .final-decision.uncertain .confidence-fill {
+        background: linear-gradient(90deg, #f59e0b, #d97706);
+      }
+
+      .confidence-text {
+        font-weight: 500;
+        color: #a1a1aa;
+        font-size: 0.9em;
+      }
+
+      .explanation {
+        padding: 32px 24px;
+        border-bottom: 1px solid #222;
+      }
+
+      .explanation h4 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #e4e4e7;
+        letter-spacing: 0.05em;
+        font-size: 0.95em;
+        text-transform: uppercase;
+      }
+
+      .markdown-content {
+        line-height: 1.8;
+        color: #d4d4d8;
+        white-space: pre-wrap;
+      }
+
+      .explanation-section {
+        margin-bottom: 20px;
+      }
+
+      .explanation-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .explanation-header {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        color: #e4e4e7;
+        font-size: 0.9em;
+        margin-bottom: 8px;
+        text-transform: none;
+      }
+
+      .explanation-item {
+        color: #d4d4d8;
+        padding: 4px 0 4px 16px;
+        position: relative;
+        font-size: 0.9em;
+        line-height: 1.6;
+      }
+
+      .explanation-item:before {
+        content: '•';
+        position: absolute;
+        left: 4px;
+        color: #71717a;
+      }
+
+      .explanation-item strong {
+        color: #e4e4e7;
+        font-weight: 500;
+      }
+
+      .explanation-text {
+        color: #a1a1aa;
+        margin: 8px 0;
+        font-size: 0.9em;
+        line-height: 1.6;
+      }
+
+      .provider-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      .provider-item {
+        padding: 12px;
+        background: transparent;
+        border: 1px solid #27272a;
+        border-left: 3px solid #27272a;
+        border-radius: 0;
+        transition: border-left-color 0.2s ease;
+      }
+
+      .provider-item.yes {
+        border-left-color: #10b981;
+      }
+
+      .provider-item.no {
+        border-left-color: #ef4444;
+      }
+
+      .provider-item.uncertain {
+        border-left-color: #f59e0b;
+      }
+
+      .provider-item:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .provider-name {
+        font-weight: 500;
+        color: #e4e4e7;
+        font-size: 0.85em;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .provider-decision {
+        font-size: 1.1em;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .provider-item.yes .provider-decision {
+        color: #10b981;
+      }
+
+      .provider-item.no .provider-decision {
+        color: #ef4444;
+      }
+
+      .provider-item.uncertain .provider-decision {
+        color: #f59e0b;
+      }
+
+      .provider-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 0.75em;
+        color: #71717a;
+      }
+
+      .llm-details {
+        background: rgba(255, 255, 255, 0.005);
+      }
+
+      .llm-details summary {
+        cursor: pointer;
+        font-weight: 500;
+        padding: 20px 24px;
+        color: #71717a;
+        border-bottom: 1px solid #222;
+        transition: all 0.2s ease;
+        font-size: 0.85em;
+      }
+
+      .llm-details summary:hover {
+        color: #a1a1aa;
+        background: rgba(255, 255, 255, 0.01);
+      }
+
+      .llm-details[open] summary {
+        color: #e4e4e7;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .llm-responses {
+        padding: 12px;
+      }
+
+      .llm-response {
+        padding: 20px;
+        margin: 8px;
+        border-left: 3px solid #27272a;
+        border: 1px solid #27272a;
+        background: transparent;
+        transition: all 0.2s ease;
+      }
+
+      .llm-response:hover {
+        border-left-color: #10b981;
+        background: rgba(255, 255, 255, 0.01);
+      }
+
+      .llm-response h5 {
+        color: #a1a1aa;
+        margin-bottom: 12px;
+        font-size: 0.85em;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .llm-response p {
+        color: #71717a;
+        margin-bottom: 6px;
+        font-size: 0.9em;
+      }
+
+      /* Processing Status */
+      .processing-status {
+        padding: 40px 20px;
+        text-align: center;
+        color: #a1a1aa;
+      }
+
+      .processing-status .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #10b981;
+        margin-bottom: 12px;
+      }
+
+      /* Recent Resolutions Section */
+      .recent-section {
+        margin-top: 60px;
+        padding-top: 40px;
+        border-top: 1px solid #222;
+      }
+
+      .recent-section h2 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        margin-bottom: 24px;
+        font-size: 1.2em;
+        color: #a1a1aa;
+      }
+
+      .no-resolutions {
+        text-align: center;
+        color: #52525b;
+        padding: 40px;
+        font-size: 0.9em;
+      }
+
+      .recent-result {
+        border: 1px solid #222;
+        border-radius: 0;
+        margin-bottom: 12px;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition:
+          opacity 0.3s ease,
+          transform 0.3s ease;
+      }
+
+      .recent-result.slide-in {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .recent-summary {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        cursor: pointer;
+        background: transparent;
+        border-left: 3px solid #27272a;
+        transition: all 0.2s ease;
+        list-style: none;
+      }
+
+      .recent-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .recent-summary:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .recent-summary.yes {
+        border-left-color: #10b981;
+      }
+
+      .recent-summary.no {
+        border-left-color: #ef4444;
+      }
+
+      .recent-summary.uncertain {
+        border-left-color: #f59e0b;
+      }
+
+      .decision-icon {
+        font-size: 1.2em;
+        flex-shrink: 0;
+      }
+
+      .recent-summary.yes .decision-icon {
+        color: #10b981;
+      }
+
+      .recent-summary.no .decision-icon {
+        color: #ef4444;
+      }
+
+      .recent-summary.uncertain .decision-icon {
+        color: #f59e0b;
+      }
+
+      .query-text {
+        color: #d4d4d8;
+        font-size: 0.9em;
+      }
+
+      .recent-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-self: end;
+      }
+
+      .recent-time {
+        font-size: 0.75em;
+        color: #71717a;
+        white-space: nowrap;
+      }
+
+      .confidence-badge {
+        padding: 4px 10px;
+        background: transparent;
+        border: 1px solid #27272a;
+        border-radius: 0;
+        font-size: 0.75em;
+        color: #71717a;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .recent-details {
+        border-top: 1px solid #222;
+      }
+
+      /* Footer */
+      footer {
+        background: transparent;
+        padding: 40px;
+        text-align: center;
+        color: #52525b;
+        border-top: 1px solid #222;
+      }
+
+      footer p {
+        margin-bottom: 20px;
+        font-size: 0.85em;
+      }
+
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 20px;
+      }
+
+      .social-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: transparent;
+        border: 1px solid #27272a;
+        border-radius: 0;
+        color: #52525b;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .social-link:hover {
+        border-color: #10b981;
+        color: #10b981;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        body {
+          padding: 0;
+        }
+
+        .container {
+          border-left: none;
+          border-right: none;
+        }
+
+        header {
+          padding: 40px 20px 30px;
+        }
+
+        .header-top {
+          position: static;
+          flex-direction: column;
+          margin-top: 20px;
+        }
+
+        .header-wallet {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .wallet-connect-btn,
+        .wallet-status {
+          width: 100%;
+        }
+
+        header h1 {
+          font-size: 2.2em;
+        }
+
+        main {
+          padding: 30px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-top">
+          <a href="/docs" class="api-link" target="_blank">API Docs</a>
+          <div class="header-wallet">
+            <button id="connectButton" class="btn wallet-connect-btn">Connect Wallet</button>
+            <div id="walletStatus" class="wallet-status">
+              <div class="status-dot"></div>
+              <span id="walletAddress" class="wallet-address"></span>
+              <span id="networkBadge" class="network-badge"></span>
+            </div>
+          </div>
+        </div>
+        <div class="header-branding">
+          <img src="/logo.png" alt="Verisage Logo" class="header-logo" />
+          <h1>Verisage.xyz</h1>
+        </div>
+        <p class="subtitle">Verifiable Multi-LLM Truth Oracle</p>
+      </header>
+
+      <main>
+        <!-- Query Form. -->
+        <div id="querySection" class="query-section">
+          <div class="info-box">
+            <p>
+              Trustless fact verification powered by multiple independent AI providers. Query
+              Claude, Gemini, Perplexity, and OpenAI simultaneously—receive consensus answers with
+              full transparency.
+            </p>
+            <p style="margin-top: 12px">
+              <strong>Note:</strong> Queries should be answerable with YES/NO. Be specific with
+              dates, names, and facts you want verified.
+            </p>
+            <p style="margin-top: 12px; font-size: 0.9em; color: #a1a1aa">
+              You can also integrate via
+              <a href="/docs" style="color: #10b981; text-decoration: none">API</a> with x402
+              payment headers for programmatic access.
+            </p>
+          </div>
+
+          <!-- Health Status Banner. -->
+          <div id="healthBanner" class="health-banner">
+            <div class="health-icon">⚠</div>
+            <div class="health-content">
+              <strong id="healthTitle">Service Status</strong>
+              <p id="healthMessage"></p>
+            </div>
+          </div>
+
+          <form id="queryForm">
+            <label for="queryInput">Ask the Oracle:</label>
+            <textarea
+              id="queryInput"
+              required
+              minlength="10"
+              maxlength="256"
+              placeholder="e.g., Did the Lakers win against the Warriors on October 22, 2025?"
+            ></textarea>
+            <div class="char-counter"><span id="charCount">0</span> / 256</div>
+
+            <button type="submit" id="submitButton" class="btn" disabled style="margin-top: 20px">
+              <span class="loading-indicator">
+                <span class="loading-spinner"></span> Consulting oracles...
+              </span>
+              <span class="button-text">Submit Query ($0.1 USDC)</span>
+            </button>
+
+            <div class="submit-notice">Connect your wallet to submit queries</div>
+          </form>
+
+          <div id="errorContainer"></div>
+        </div>
+
+        <!-- Results. -->
+        <div id="resultSection" class="result-section">
+          <div id="resultContent"></div>
+        </div>
+
+        <!-- Loading. -->
+        <div id="loadingSection" class="result-card" style="display: none">
+          <div class="processing-status">
+            <span class="loading-spinner"></span>
+            <p id="loadingMessage">Processing your query...</p>
+          </div>
+        </div>
+
+        <!-- Recent Public Resolutions. -->
+        <div class="recent-section">
+          <h2>Recent Public Resolutions</h2>
+          <div id="recent-resolutions"></div>
+        </div>
+      </main>
+
+      <footer>
+        <p>Built for Oasis ROFL.</p>
+        <div class="social-links">
+          <a
+            href="https://github.com/ptrus/verisage-xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+            aria-label="GitHub"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+              />
+            </svg>
+          </a>
+          <a
+            href="https://twitter.com/petusr"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+            aria-label="X (Twitter)"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+              />
+            </svg>
+          </a>
+        </div>
+        <p style="margin-top: 16px; margin-bottom: 0; font-size: 0.8em">
+          <a
+            href="/docs"
+            class="api-link"
+            target="_blank"
+            style="display: inline-block; padding: 6px 12px; font-size: 0.85em"
+            >API Docs</a
+          >
+        </p>
+      </footer>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

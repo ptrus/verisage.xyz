@@ -9,15 +9,16 @@ from src.models import LLMResponse
 class PerplexityClient(BaseLLMClient):
     """Client for Perplexity AI API."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, model: str = "sonar-pro"):
         """Initialize Perplexity client.
 
         Args:
             api_key: Perplexity API key
+            model: Perplexity model name (sonar models have built-in real-time web search)
         """
         super().__init__(api_key, "perplexity")
         self.api_url = "https://api.perplexity.ai/chat/completions"
-        self.model = "llama-3.1-sonar-small-128k-online"
+        self.model = model
 
     async def query(self, prompt: str) -> LLMResponse:
         """Send a query to Perplexity and return structured response.
@@ -38,12 +39,16 @@ class PerplexityClient(BaseLLMClient):
 
             payload = {
                 "model": self.model,
-                "messages": [{"role": "user", "content": dispute_prompt}],
+                "enable_search_classifier": True,
+                "messages": [
+                    {"role": "system", "content": self._system_prompt()},
+                    {"role": "user", "content": dispute_prompt},
+                ],
                 "max_tokens": 1024,
                 "temperature": 0.2,
             }
 
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(self.api_url, json=payload, headers=headers)
                 response.raise_for_status()
                 data = response.json()

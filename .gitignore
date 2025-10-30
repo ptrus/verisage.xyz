@@ -27,8 +27,17 @@ venv/
 ENV/
 env/
 
+# Test uv.lock
+tests/e2e/uv.lock
+
 # Environment variables
 .env
+
+# SQLite databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 
 # IDEs
 .vscode/
@@ -41,5 +50,14 @@ env/
 .DS_Store
 Thumbs.db
 
-# uv
-uv.lock
+# Logs
+logs/
+*.log
+
+# Untracked files
+untracked/
+
+# Frontend build artifacts (will be deployed to Cloudflare Pages)
+frontend-src/dist/
+frontend-src/node_modules/
+*.orc

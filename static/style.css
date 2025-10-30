@@ -1,4 +1,4 @@
-/* Reset and base styles */
+/* Reset and base styles. */
 * {
     margin: 0;
     padding: 0;
@@ -23,7 +23,7 @@ body {
     overflow: hidden;
 }
 
-/* Header */
+/* Header. */
 header {
     border-bottom: 1px solid #222;
     color: white;
@@ -73,7 +73,7 @@ header h1 {
     letter-spacing: 0;
 }
 
-/* Main content */
+/* Main content. */
 main {
     padding: 40px;
 }
@@ -94,7 +94,7 @@ main {
     color: #d4d4d8;
 }
 
-/* Query form */
+/* Query form. */
 .query-form {
     background: transparent;
     padding: 0;
@@ -148,6 +148,12 @@ textarea:focus {
     background: #0f0f0f;
 }
 
+textarea:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #0a0a0a;
+}
+
 .submit-btn {
     background: #e4e4e7;
     color: #0a0a0a;
@@ -170,11 +176,21 @@ textarea:focus {
     transform: scale(0.98);
 }
 
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.submit-btn:disabled:hover {
+    background: #e4e4e7;
+    transform: none;
+}
+
 .submit-btn.loading .button-text {
     display: none;
 }
 
-.submit-btn:not(.loading) .htmx-indicator {
+.submit-btn:not(.loading) .loading-indicator {
     display: none;
 }
 
@@ -193,7 +209,7 @@ textarea:focus {
     to { transform: rotate(360deg); }
 }
 
-/* Error Banner */
+/* Error Banner. */
 #error-container {
     margin-bottom: 20px;
 }
@@ -255,9 +271,31 @@ textarea:focus {
     color: #a1a1aa;
 }
 
-/* Results */
+/* Results. */
 #results-container {
     margin-bottom: 40px;
+}
+
+.processing-status {
+    padding: 40px 20px;
+    text-align: center;
+    color: #a1a1aa;
+}
+
+.processing-status .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #10b981;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+}
+
+.processing-status p {
+    margin: 0;
+    font-size: 0.95em;
 }
 
 .result-card {
@@ -366,7 +404,7 @@ textarea:focus {
     margin-left: 20px;
 }
 
-/* LLM Details */
+/* LLM Details. */
 .llm-details {
     margin-top: 0;
 }
@@ -463,7 +501,7 @@ textarea:focus {
     border: 1px solid #222;
 }
 
-/* Footer */
+/* Footer. */
 footer {
     background: transparent;
     padding: 40px;
@@ -503,7 +541,7 @@ footer p {
     color: #10b981;
 }
 
-/* Responsive */
+/* Responsive. */
 @media (max-width: 768px) {
     body {
         padding: 0;
@@ -547,7 +585,137 @@ footer p {
     }
 }
 
-/* Scrollbar styling */
+/* Recent Resolutions. */
+.recent-section {
+    margin-top: 60px;
+    border-top: 1px solid #222;
+    padding-top: 40px;
+}
+
+.recent-section h2 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: #a1a1aa;
+    margin-bottom: 24px;
+    font-size: 0.85em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.no-resolutions {
+    color: #52525b;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 0.9em;
+}
+
+.recent-result {
+    background: transparent;
+    border: 1px solid #222;
+    border-radius: 0;
+    margin-bottom: 1px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.recent-result.slide-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.recent-summary {
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    user-select: none;
+    transition: background 0.2s ease;
+    list-style: none;
+}
+
+.recent-summary::-webkit-details-marker {
+    display: none;
+}
+
+.recent-summary::marker {
+    display: none;
+}
+
+.recent-summary:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.recent-summary.yes {
+    border-left: 3px solid #10b981;
+}
+
+.recent-summary.no {
+    border-left: 3px solid #ef4444;
+}
+
+.recent-summary.uncertain {
+    border-left: 3px solid #f59e0b;
+}
+
+.decision-icon {
+    font-size: 1.2em;
+    font-weight: bold;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.recent-summary.yes .decision-icon {
+    color: #10b981;
+}
+
+.recent-summary.no .decision-icon {
+    color: #ef4444;
+}
+
+.recent-summary.uncertain .decision-icon {
+    color: #f59e0b;
+}
+
+.query-text {
+    flex: 1;
+    color: #d4d4d8;
+    font-size: 0.9em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.confidence-badge {
+    font-size: 0.8em;
+    color: #71717a;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.recent-details {
+    padding: 0 20px 20px 20px;
+    background: #0a0a0a;
+}
+
+.recent-details .explanation {
+    margin-bottom: 20px;
+}
+
+.recent-details .explanation h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: #a1a1aa;
+    letter-spacing: 0.05em;
+    font-size: 0.75em;
+    text-transform: uppercase;
+}
+
+/* Scrollbar styling. */
 ::-webkit-scrollbar {
     width: 8px;
 }

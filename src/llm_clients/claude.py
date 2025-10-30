@@ -9,15 +9,23 @@ from src.models import LLMResponse
 class ClaudeClient(BaseLLMClient):
     """Client for Anthropic's Claude API."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, model: str = "claude-haiku-4-5-20251001"):
         """Initialize Claude client.
 
         Args:
             api_key: Anthropic API key
+            model: Claude model name (must support web_search tool for real-time grounding)
         """
         super().__init__(api_key, "claude")
         self.client = AsyncAnthropic(api_key=api_key)
-        self.model = "claude-3-5-sonnet-20241022"
+        self.model = model
+        # Configure web-search tool to support real-time grounding data.
+        self.tools = [
+            {
+                "type": "web_search_20250305",
+                "name": "web_search",
+            }
+        ]
 
     async def query(self, prompt: str) -> LLMResponse:
         """Send a query to Claude and return structured response.
@@ -34,10 +42,29 @@ class ClaudeClient(BaseLLMClient):
             message = await self.client.messages.create(
                 model=self.model,
                 max_tokens=1024,
+                system=self._system_prompt(),
                 messages=[{"role": "user", "content": dispute_prompt}],
+                tools=self.tools,
+                stream=False,
             )
 
-            raw_response = message.content[0].text
+            # Extract text from content blocks, handling tool use responses.
+            raw_response = ""
+            for block in message.content:
+                if hasattr(block, "text"):
+                    raw_response += block.text
+
+            # If no text found, return uncertain.
+            if not raw_response:
+                return LLMResponse(
+                    provider=self.provider_name,
+                    decision="uncertain",
+                    confidence=0.0,
+                    reasoning="No text response received from Claude",
+                    raw_response=str(message.content),
+                    error="No text content in response",
+                )
+
             decision, confidence, reasoning = self._parse_response(raw_response)
 
             return LLMResponse(

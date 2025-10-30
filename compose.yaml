@@ -1,0 +1,41 @@
+services:
+  server:
+    image: docker.io/ptrusr/verisage:latest@sha256:db995b4ed8ef4d37827e192ef9fdb0dc1a6ef9ba9a694cf66cda5d2dc47a0d97
+    container_name: verisage-server
+    command: ./start-server.sh
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG_MOCK=${DEBUG_MOCK:-false}
+      - DEBUG_PAYMENTS=${DEBUG_PAYMENTS:-false}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - X402_PAYMENT_ADDRESS=${X402_PAYMENT_ADDRESS}
+      - X402_NETWORK=${X402_NETWORK:-base-sepolia}
+      - X402_PRICE=${X402_PRICE:-$0.1}
+      - CDP_API_KEY_ID=${CDP_API_KEY_ID:-}
+      - CDP_API_KEY_SECRET=${CDP_API_KEY_SECRET:-}
+      - DATA_DIR=/app/data
+    volumes:
+      - db-data:/app/data
+    restart: unless-stopped
+
+  worker:
+    image: docker.io/ptrusr/verisage:latest@sha256:db995b4ed8ef4d37827e192ef9fdb0dc1a6ef9ba9a694cf66cda5d2dc47a0d97
+    container_name: verisage-worker
+    command: ./start-worker.sh
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG_MOCK=${DEBUG_MOCK:-false}
+      - DEBUG_SIGNING=${DEBUG_SIGNING:-false}
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-mock-key}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-mock-key}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY:-mock-key}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-mock-key}
+      - DATA_DIR=/app/data
+    volumes:
+      - db-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  db-data:

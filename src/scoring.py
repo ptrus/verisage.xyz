@@ -1,6 +1,6 @@
 """Weighted scoring system for aggregating LLM responses."""
 
-from typing import Dict
+from datetime import UTC, datetime
 
 from src.models import DecisionType, LLMResponse, OracleResult
 
@@ -8,7 +8,7 @@ from src.models import DecisionType, LLMResponse, OracleResult
 class WeightedScorer:
     """Aggregates multiple LLM responses using weighted scoring."""
 
-    def __init__(self, weights: Dict[str, float]):
+    def __init__(self, weights: dict[str, float]):
         """Initialize the scorer with provider weights.
 
         Args:
@@ -26,7 +26,7 @@ class WeightedScorer:
         Returns:
             OracleResult with final decision and explanation
         """
-        # Calculate weighted scores for each decision type
+        # Calculate weighted scores for each decision type.
         decision_scores = {
             DecisionType.YES: 0.0,
             DecisionType.NO: 0.0,
@@ -36,30 +36,47 @@ class WeightedScorer:
         total_weight = 0.0
         valid_responses = [r for r in responses if r.error is None]
 
-        # Accumulate weighted scores
+        # Accumulate weighted scores.
         for response in valid_responses:
             weight = self.weights.get(response.provider, 1.0)
             total_weight += weight
 
-            # Add weighted confidence to the decision score
+            # Add weighted confidence to the decision score.
             decision_scores[response.decision] += weight * response.confidence
 
-        # Determine final decision
+        # Determine final decision.
         if total_weight == 0:
-            # All providers failed
+            # All providers failed.
             final_decision = DecisionType.UNCERTAIN
             final_confidence = 0.0
         else:
-            # Normalize scores by total weight
+            # Normalize scores by total weight.
             normalized_scores = {
                 decision: score / total_weight for decision, score in decision_scores.items()
             }
 
-            # Find decision with highest normalized score
-            final_decision = max(normalized_scores, key=normalized_scores.get)
-            final_confidence = normalized_scores[final_decision]
+            # Find decision with highest normalized score.
+            winning_decision, winning_score = max(
+                normalized_scores.items(), key=lambda item: item[1]
+            )
 
-        # Generate explanation
+            # Check for ties (excluding UNCERTAIN from tie check).
+            yes_score = normalized_scores[DecisionType.YES]
+            no_score = normalized_scores[DecisionType.NO]
+
+            if winning_score <= 0.0:
+                # No positive scores.
+                final_decision = DecisionType.UNCERTAIN
+                final_confidence = 0.0
+            elif abs(yes_score - no_score) < 0.01 and yes_score > 0:
+                # YES and NO are tied, return UNCERTAIN.
+                final_decision = DecisionType.UNCERTAIN
+                final_confidence = winning_score
+            else:
+                final_decision = winning_decision
+                final_confidence = winning_score
+
+        # Generate explanation.
         explanation = self._generate_explanation(
             valid_responses, final_decision, final_confidence, total_weight
         )
@@ -71,6 +88,7 @@ class WeightedScorer:
             explanation=explanation,
             llm_responses=responses,
             total_weight=total_weight,
+            timestamp=datetime.now(UTC),
         )
 
     def _generate_explanation(
@@ -94,12 +112,12 @@ class WeightedScorer:
         if not responses:
             return "All LLM providers failed to respond. Unable to make a decision."
 
-        # Count votes by decision
+        # Count votes by decision.
         decision_counts = {DecisionType.YES: 0, DecisionType.NO: 0, DecisionType.UNCERTAIN: 0}
         for response in responses:
             decision_counts[response.decision] += 1
 
-        # Build explanation
+        # Build explanation.
         explanation_parts = [
             f"**Final Decision: {final_decision.value.upper()}** (confidence: {final_confidence:.2f})",
             "",
