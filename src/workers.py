@@ -13,6 +13,13 @@ from src.models import JobStatus
 from src.oracle import oracle
 from src.signing import signing_service
 
+# Configure logging.
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s:%(name)s:%(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
 # Get data directory from environment or use current directory.
 DATA_DIR = os.getenv("DATA_DIR", ".")
 # Ensure data directory exists before creating database.

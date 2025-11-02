@@ -20,11 +20,13 @@ The dev server will start on `http://localhost:5173` and proxy API requests to `
 ### Initial Setup
 
 1. Install Wrangler CLI:
+
    ```bash
    npm install -g wrangler
    ```
 
 2. Login to Cloudflare:
+
    ```bash
    wrangler login
    ```

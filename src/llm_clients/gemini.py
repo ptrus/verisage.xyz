@@ -17,7 +17,7 @@ class GeminiClient(BaseLLMClient):
             api_key: Google API key
             model: Gemini model name (must support Google Search grounding)
         """
-        super().__init__(api_key, "gemini")
+        super().__init__(api_key, "gemini", model)
         self.model_name = model
 
     async def query(self, prompt: str) -> LLMResponse:
@@ -47,6 +47,7 @@ class GeminiClient(BaseLLMClient):
 
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model_name,
                 decision=decision,
                 confidence=confidence,
                 reasoning=reasoning,
@@ -57,6 +58,7 @@ class GeminiClient(BaseLLMClient):
         except Exception as e:
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model_name,
                 decision="uncertain",
                 confidence=0.0,
                 reasoning=f"Error querying Gemini: {str(e)}",

@@ -3,10 +3,10 @@
 set -e
 
 COMPOSE_FILE=$(yq -r '.artifacts.container.compose' rofl.yaml)
-VERISAGE_IMAGE=$(yq -r '.services."talos-agent".image' ${COMPOSE_FILE})
+VERISAGE_IMAGE=$(yq -r '.services."server".image' ${COMPOSE_FILE})
 
 if [[ "${VERISAGE_IMAGE}" != "${EXPECTED_VERISAGE_IMAGE}" ]]; then
-  echo "Talos agent image mismatch:"
+  echo "Verisage image mismatch:"
   echo ""
   echo "  Configured in ${COMPOSE_FILE}:"
   echo "    ${VERISAGE_IMAGE}"
@@ -16,3 +16,6 @@ if [[ "${VERISAGE_IMAGE}" != "${EXPECTED_VERISAGE_IMAGE}" ]]; then
   echo ""
   exit 1
 fi
+
+echo "Verisage image verified: ${VERISAGE_IMAGE}"
+exit 0

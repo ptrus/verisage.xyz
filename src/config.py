@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     # LLM Model names.
     claude_model: str = "claude-haiku-4-5-20251001"
     gemini_model: str = "gemini-2.0-flash-exp"
-    openai_model: str = "gpt-4o-mini"
+    openai_model: str = "gpt-4o"
     perplexity_model: str = "sonar-pro"
 
     # x402 Payment Configuration (optional if debug_payments=True).

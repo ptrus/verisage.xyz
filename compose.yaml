@@ -1,12 +1,14 @@
 services:
   server:
-    image: docker.io/ptrusr/verisage:latest@sha256:db995b4ed8ef4d37827e192ef9fdb0dc1a6ef9ba9a694cf66cda5d2dc47a0d97
+    image: docker.io/ptrusr/verisage:latest@sha256:9bba64fcbd9107c94121b68649b31d66c38ecc655e833e3f06b012c38387c928
     container_name: verisage-server
     command: ./start-server.sh
     ports:
       - "8000:8000"
+    annotations:
+      net.oasis.proxy.ports.8000.custom_domain: api.verisage.xyz
     environment:
-      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
       - DEBUG_MOCK=${DEBUG_MOCK:-false}
       - DEBUG_PAYMENTS=${DEBUG_PAYMENTS:-false}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
@@ -19,9 +21,8 @@ services:
     volumes:
       - db-data:/app/data
     restart: unless-stopped
-
   worker:
-    image: docker.io/ptrusr/verisage:latest@sha256:db995b4ed8ef4d37827e192ef9fdb0dc1a6ef9ba9a694cf66cda5d2dc47a0d97
+    image: docker.io/ptrusr/verisage:latest@sha256:9bba64fcbd9107c94121b68649b31d66c38ecc655e833e3f06b012c38387c928
     container_name: verisage-worker
     command: ./start-worker.sh
     environment:
@@ -36,6 +37,5 @@ services:
     volumes:
       - db-data:/app/data
     restart: unless-stopped
-
 volumes:
   db-data:

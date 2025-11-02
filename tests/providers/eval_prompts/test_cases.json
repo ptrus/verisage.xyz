@@ -1,0 +1,79 @@
+{
+  "test_cases": [
+    {
+      "id": "sports-001",
+      "query": "Did the Los Angeles Lakers defeat the Sacramento Kings on October 26 2025?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "sports-002",
+      "query": "Did the Dallas Mavericks beat the Toronto Raptors by a margin of at least 10 points on October 26 2025?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "sports-003",
+      "query": "Did the Detroit Pistons defeat the Boston Celtics with a final score of 119-113 on October 26 2025?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "sports-004",
+      "query": "Did the Golden State Warriors defeat the Portland Trail Blazers on October 26 2025?",
+      "expected_decision": "no"
+    },
+    {
+      "id": "crypto-001",
+      "query": "Was the closing price of Bitcoin (BTC) above USD 115 000 on October 27 2025?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "crypto-002",
+      "query": "Did Bitcoin fall below USD 110 000 on October 29 2025?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "crypto-003",
+      "query": "Was the price of Bitcoin below USD 100 000 on October 27 2025?",
+      "expected_decision": "no"
+    },
+    {
+      "id": "politics-001",
+      "query": "Is the 2025 New York City Council election scheduled for November 4 2025?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "politics-002",
+      "query": "Is the 2025 mayoral election in New York City scheduled for November 4 2025?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "politics-003",
+      "query": "Did Joe Biden win the 2024 US Presidential election?",
+      "expected_decision": "no"
+    },
+    {
+      "id": "tech-001",
+      "query": "Did Apple release the iPhone 16 in 2024?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "tech-002",
+      "query": "Did Microsoft acquire OpenAI in 2024?",
+      "expected_decision": "no"
+    },
+    {
+      "id": "history-001",
+      "query": "Did World War II end in 1945?",
+      "expected_decision": "yes"
+    },
+    {
+      "id": "history-002",
+      "query": "Did the Berlin Wall fall in 1991?",
+      "expected_decision": "no"
+    },
+    {
+      "id": "science-001",
+      "query": "Is water composed of hydrogen and oxygen?",
+      "expected_decision": "yes"
+    }
+  ]
+}

@@ -29,9 +29,11 @@ env/
 
 # Test uv.lock
 tests/e2e/uv.lock
+tests/providers/eval_prompts/test_results/
 
 # Environment variables
 .env
+.env.mainnet
 
 # SQLite databases
 *.db

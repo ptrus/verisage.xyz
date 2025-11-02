@@ -21,6 +21,7 @@ dependencies = [
     "oasis-rofl-client>=0.1.5",
     "coincurve>=20.0.0",
     "cdp-sdk>=0.21.0",
+    "perplexityai>=0.19.1",
 ]
 
 [dependency-groups]

@@ -1,0 +1,36 @@
+name: reproducibility-rofl
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: "Branch or tag to verify"
+        default: "main"
+        required: true
+      deployment:
+        description: "ROFL deployment to verify"
+        default: "mainnet"
+        required: true
+
+jobs:
+  check-rofl-reproducibility:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      ROFL_DEPLOYMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.deployment || 'mainnet' }}
+      ROFL_GIT_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || 'master' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.ROFL_GIT_REF }}
+
+      - name: Setup Oasis CLI
+        uses: oasisprotocol/setup-cli-action@0.0.2
+
+      - name: Build and Verify ROFL Enclave IDs match on-chain state
+        run: oasis rofl build --deployment "${ROFL_DEPLOYMENT}" --verify

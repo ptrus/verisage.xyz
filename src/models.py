@@ -18,6 +18,7 @@ class LLMResponse(BaseModel):
     """Response from a single LLM backend."""
 
     provider: str = Field(..., description="LLM provider name (claude, gemini, perplexity)")
+    model: str = Field(..., description="Model name used (e.g., claude-haiku-4-5-20251001, gpt-4o)")
     decision: DecisionType = Field(..., description="The LLM's decision")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score (0.0 to 1.0)")
     reasoning: str = Field(..., description="Explanation for the decision")

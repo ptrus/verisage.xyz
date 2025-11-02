@@ -29,6 +29,7 @@ def sample_oracle_result():
         llm_responses=[
             LLMResponse(
                 provider="claude",
+                model="claude-test",
                 decision=DecisionType.YES,
                 confidence=0.85,
                 reasoning="Test reasoning",

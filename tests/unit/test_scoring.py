@@ -11,6 +11,7 @@ def test_unanimous_yes_decision():
     responses = [
         LLMResponse(
             provider="claude",
+            model="claude-test",
             decision=DecisionType.YES,
             confidence=0.9,
             reasoning="Test reasoning",
@@ -19,6 +20,7 @@ def test_unanimous_yes_decision():
         ),
         LLMResponse(
             provider="gemini",
+            model="gemini-test",
             decision=DecisionType.YES,
             confidence=0.85,
             reasoning="Test reasoning",
@@ -27,6 +29,7 @@ def test_unanimous_yes_decision():
         ),
         LLMResponse(
             provider="perplexity",
+            model="perplexity-test",
             decision=DecisionType.YES,
             confidence=0.95,
             reasoning="Test reasoning",
@@ -49,6 +52,7 @@ def test_weighted_decision():
     responses = [
         LLMResponse(
             provider="claude",
+            model="claude-test",
             decision=DecisionType.YES,
             confidence=0.9,
             reasoning="Claude says yes",
@@ -57,6 +61,7 @@ def test_weighted_decision():
         ),
         LLMResponse(
             provider="gemini",
+            model="gemini-test",
             decision=DecisionType.NO,
             confidence=0.9,
             reasoning="Gemini says no",
@@ -78,6 +83,7 @@ def test_uncertain_when_no_clear_winner():
     responses = [
         LLMResponse(
             provider="claude",
+            model="claude-test",
             decision=DecisionType.YES,
             confidence=0.5,
             reasoning="Maybe yes",
@@ -86,6 +92,7 @@ def test_uncertain_when_no_clear_winner():
         ),
         LLMResponse(
             provider="gemini",
+            model="gemini-test",
             decision=DecisionType.NO,
             confidence=0.5,
             reasoning="Maybe no",
@@ -107,6 +114,7 @@ def test_handles_errors_gracefully():
     responses = [
         LLMResponse(
             provider="claude",
+            model="claude-test",
             decision=DecisionType.YES,
             confidence=0.9,
             reasoning="Claude works",
@@ -115,6 +123,7 @@ def test_handles_errors_gracefully():
         ),
         LLMResponse(
             provider="gemini",
+            model="gemini-test",
             decision=DecisionType.UNCERTAIN,
             confidence=0.0,
             reasoning="Error occurred",

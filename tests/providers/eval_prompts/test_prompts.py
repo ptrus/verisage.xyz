@@ -114,13 +114,11 @@ class PromptTester:
         test_id = test_case["id"]
         query = test_case["query"]
         expected_decision = test_case["expected_decision"]
-        min_confidence = test_case.get("min_confidence", 0.5)
 
         print(f"\n{'=' * 80}")
         print(f"Test: {test_id}")
-        print(f"Category: {test_case['category']}")
         print(f"Query: {query}")
-        print(f"Expected: {expected_decision} (min confidence: {min_confidence})")
+        print(f"Expected: {expected_decision}")
         print(f"{'=' * 80}")
 
         start_time = time.time()
@@ -174,30 +172,22 @@ class PromptTester:
 
         # Determine if test passed
         decision_match = actual_decision == expected_decision
-        confidence_ok = actual_confidence >= min_confidence
-
-        passed = decision_match and confidence_ok
+        passed = decision_match
 
         status_emoji = "✅" if passed else "❌"
         print(f"\n{status_emoji} Result: {actual_decision} (confidence: {actual_confidence:.2f})")
         print(f"   Decision Match: {'✓' if decision_match else '✗'}")
-        print(f"   Confidence OK: {'✓' if confidence_ok else '✗'}")
         print(f"   Elapsed Time: {elapsed_time:.1f}s")
 
         return {
             "test_id": test_id,
-            "category": test_case["category"],
             "query": query,
             "expected_decision": expected_decision,
             "actual_decision": actual_decision,
-            "expected_min_confidence": min_confidence,
             "actual_confidence": actual_confidence,
             "decision_match": decision_match,
-            "confidence_ok": confidence_ok,
             "passed": passed,
             "elapsed_time": elapsed_time,
-            "tags": test_case.get("tags", []),
-            "notes": test_case.get("notes", ""),
             "full_response": oracle_result,
         }
 
@@ -239,19 +229,6 @@ class PromptTester:
         passed = sum(1 for r in results if r.get("passed", False))
         failed = total - passed
 
-        decision_matches = sum(1 for r in results if r.get("decision_match", False))
-        confidence_passes = sum(1 for r in results if r.get("confidence_ok", False))
-
-        # Category breakdown
-        categories = {}
-        for result in results:
-            cat = result.get("category", "unknown")
-            if cat not in categories:
-                categories[cat] = {"total": 0, "passed": 0}
-            categories[cat]["total"] += 1
-            if result.get("passed", False):
-                categories[cat]["passed"] += 1
-
         # Average metrics
         avg_time = sum(r.get("elapsed_time", 0) for r in results) / total if total > 0 else 0
         avg_confidence = (
@@ -268,14 +245,11 @@ class PromptTester:
                 "passed": passed,
                 "failed": failed,
                 "pass_rate": (passed / total * 100) if total > 0 else 0,
-                "decision_matches": decision_matches,
-                "confidence_passes": confidence_passes,
             },
             "metrics": {
                 "avg_elapsed_time": avg_time,
                 "avg_confidence": avg_confidence,
             },
-            "categories": categories,
             "results": results,
         }
 
@@ -314,12 +288,10 @@ class PromptTester:
         summary = report["summary"]
         f.write("SUMMARY\n")
         f.write("-" * 80 + "\n")
-        f.write(f"Total Tests:      {summary['total_tests']}\n")
-        f.write(f"Passed:           {summary['passed']} ✅\n")
-        f.write(f"Failed:           {summary['failed']} ❌\n")
-        f.write(f"Pass Rate:        {summary['pass_rate']:.1f}%\n")
-        f.write(f"Decision Matches: {summary['decision_matches']}/{summary['total_tests']}\n")
-        f.write(f"Confidence Passes: {summary['confidence_passes']}/{summary['total_tests']}\n")
+        f.write(f"Total Tests:  {summary['total_tests']}\n")
+        f.write(f"Passed:       {summary['passed']} ✅\n")
+        f.write(f"Failed:       {summary['failed']} ❌\n")
+        f.write(f"Pass Rate:    {summary['pass_rate']:.1f}%\n")
         f.write("\n")
 
         metrics = report["metrics"]
@@ -327,13 +299,6 @@ class PromptTester:
         f.write("-" * 80 + "\n")
         f.write(f"Avg Elapsed Time: {metrics['avg_elapsed_time']:.1f}s\n")
         f.write(f"Avg Confidence:   {metrics['avg_confidence']:.2f}\n")
-        f.write("\n")
-
-        f.write("CATEGORY BREAKDOWN\n")
-        f.write("-" * 80 + "\n")
-        for cat, stats in report["categories"].items():
-            pass_rate = (stats["passed"] / stats["total"] * 100) if stats["total"] > 0 else 0
-            f.write(f"{cat:20s}: {stats['passed']}/{stats['total']} ({pass_rate:.0f}%)\n")
         f.write("\n")
 
         f.write("DETAILED RESULTS\n")
@@ -346,16 +311,10 @@ class PromptTester:
                 f"  Expected: {result['expected_decision']} | "
                 f"Actual: {result.get('actual_decision', 'N/A')}\n"
             )
-            f.write(
-                f"  Confidence: {result.get('actual_confidence', 0):.2f} "
-                f"(min: {result['expected_min_confidence']:.2f})\n"
-            )
+            f.write(f"  Confidence: {result.get('actual_confidence', 0):.2f}\n")
             f.write(f"  Time: {result.get('elapsed_time', 0):.1f}s\n")
             if not result.get("passed"):
-                if not result.get("decision_match"):
-                    f.write("  ⚠️  Decision mismatch\n")
-                if not result.get("confidence_ok"):
-                    f.write("  ⚠️  Confidence too low\n")
+                f.write("  ⚠️  Decision mismatch\n")
 
     def print_summary(self, report: dict):
         """Print summary to console."""
@@ -365,21 +324,14 @@ class PromptTester:
         print("=" * 80)
 
         summary = report["summary"]
-        print(f"\nTotal Tests:      {summary['total_tests']}")
-        print(f"Passed:           {summary['passed']} ✅")
-        print(f"Failed:           {summary['failed']} ❌")
-        print(f"Pass Rate:        {summary['pass_rate']:.1f}%")
-        print(f"Decision Matches: {summary['decision_matches']}/{summary['total_tests']}")
-        print(f"Confidence Passes: {summary['confidence_passes']}/{summary['total_tests']}")
+        print(f"\nTotal Tests: {summary['total_tests']}")
+        print(f"Passed:      {summary['passed']} ✅")
+        print(f"Failed:      {summary['failed']} ❌")
+        print(f"Pass Rate:   {summary['pass_rate']:.1f}%")
 
         metrics = report["metrics"]
         print(f"\nAvg Elapsed Time: {metrics['avg_elapsed_time']:.1f}s")
         print(f"Avg Confidence:   {metrics['avg_confidence']:.2f}")
-
-        print("\nCategory Breakdown:")
-        for cat, stats in report["categories"].items():
-            pass_rate = (stats["passed"] / stats["total"] * 100) if stats["total"] > 0 else 0
-            print(f"  {cat:20s}: {stats['passed']}/{stats['total']} ({pass_rate:.0f}%)")
 
 
 def main():

@@ -11,6 +11,7 @@ ARG UV_VERSION=0.9.7
 ARG UV_NO_INSTALLER_METADATA=1
 # Disable emitting debug symbols as those can contain randomized local paths.
 ARG CFLAGS="-g0"
+ENV PYTHONDONTWRITEBYTECODE=1
 
 # Install Debian packages from snapshot for reproducibility.
 RUN rm -f /etc/apt/sources.list.d/* && \
@@ -30,14 +31,20 @@ COPY static/ ./static/
 COPY start-server.sh start-worker.sh ./
 
 RUN find . -exec touch -d @${SOURCE_DATE_EPOCH} "{}" \; && \
+    find . -type l -exec touch -h -d @${SOURCE_DATE_EPOCH} "{}" \; && \
     find . -type f -exec chmod 644 "{}" \; && \
     find . -type d -exec chmod 755 "{}" \; && \
-    chmod 755 start-server.sh start-worker.sh && \
+chmod 755 start-server.sh start-worker.sh && \
     chown -R root:root .
 
 RUN uv venv && \
     . .venv/bin/activate && \
-    uv sync --locked
+    uv sync --locked && \
+    find /app/.venv -exec touch -d @${SOURCE_DATE_EPOCH} "{}" \; && \
+    find /app -type d -name '__pycache__' -prune -exec rm -rf "{}" + && \
+    find /app -type l -exec touch -h -d @${SOURCE_DATE_EPOCH} "{}" \; && \
+    find /app -exec touch -d @${SOURCE_DATE_EPOCH} "{}" \; && \
+    touch -d @${SOURCE_DATE_EPOCH} /app
 
 
 FROM python:3.12-slim@sha256:d67a7b66b989ad6b6d6b10d428dcc5e0bfc3e5f88906e67d490c4d3daac57047
@@ -49,14 +56,16 @@ ARG SOURCE_DATE_EPOCH
 # Set environment variables.
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app/.venv/bin:$PATH"
+    PATH="/app/.venv/bin:$PATH" \
+    SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 
-# Copy application files from builder stage.
-COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/src /app/src
-COPY --from=builder /app/static /app/static
-COPY --from=builder /app/start-server.sh /app/start-worker.sh /app/
-COPY --from=builder /app/pyproject.toml /app/
+# Copy application files from builder stage in a single layer.
+COPY --from=builder /app/ /app/
+
+RUN find /app -type d -name '__pycache__' -prune -exec rm -rf "{}" + && \
+    find /app -type l -exec touch -h -d @${SOURCE_DATE_EPOCH} "{}" \; && \
+    find /app -exec touch -d @${SOURCE_DATE_EPOCH} "{}" \; && \
+    touch -d @${SOURCE_DATE_EPOCH} /app
 
 EXPOSE 8000
 

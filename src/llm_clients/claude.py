@@ -16,7 +16,7 @@ class ClaudeClient(BaseLLMClient):
             api_key: Anthropic API key
             model: Claude model name (must support web_search tool for real-time grounding)
         """
-        super().__init__(api_key, "claude")
+        super().__init__(api_key, "claude", model)
         self.client = AsyncAnthropic(api_key=api_key)
         self.model = model
         # Configure web-search tool to support real-time grounding data.
@@ -58,6 +58,7 @@ class ClaudeClient(BaseLLMClient):
             if not raw_response:
                 return LLMResponse(
                     provider=self.provider_name,
+                    model=self.model,
                     decision="uncertain",
                     confidence=0.0,
                     reasoning="No text response received from Claude",
@@ -69,6 +70,7 @@ class ClaudeClient(BaseLLMClient):
 
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model,
                 decision=decision,
                 confidence=confidence,
                 reasoning=reasoning,
@@ -79,6 +81,7 @@ class ClaudeClient(BaseLLMClient):
         except Exception as e:
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model,
                 decision="uncertain",
                 confidence=0.0,
                 reasoning=f"Error querying Claude: {str(e)}",

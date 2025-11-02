@@ -259,27 +259,45 @@ class JobStore:
 
         return deleted
 
-    def get_recent_completed_jobs(self, limit: int = 5) -> list[dict]:
+    def get_recent_completed_jobs(
+        self, limit: int = 5, exclude_uncertain: bool = True
+    ) -> list[dict]:
         """Get recently completed jobs.
 
         Args:
             limit: Maximum number of jobs to return (default: 5)
+            exclude_uncertain: Exclude jobs with uncertain final_decision (default: True)
 
         Returns:
             List of job data dictionaries, most recent first
         """
         with self._cursor(row_factory=sqlite3.Row) as cursor:
-            cursor.execute(
-                """
-                SELECT id, status, query, result_json, error, created_at, completed_at,
-                       payer_address, tx_hash, network
-                FROM jobs
-                WHERE status = ?
-                ORDER BY completed_at DESC
-                LIMIT ?
-                """,
-                (JobStatus.COMPLETED.value, limit),
-            )
+            if exclude_uncertain:
+                # Filter out uncertain results using JSON extraction
+                cursor.execute(
+                    """
+                    SELECT id, status, query, result_json, error, created_at, completed_at,
+                           payer_address, tx_hash, network
+                    FROM jobs
+                    WHERE status = ?
+                    AND (result_json IS NULL OR json_extract(result_json, '$.final_decision') != 'uncertain')
+                    ORDER BY completed_at DESC
+                    LIMIT ?
+                    """,
+                    (JobStatus.COMPLETED.value, limit),
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, status, query, result_json, error, created_at, completed_at,
+                           payer_address, tx_hash, network
+                    FROM jobs
+                    WHERE status = ?
+                    ORDER BY completed_at DESC
+                    LIMIT ?
+                    """,
+                    (JobStatus.COMPLETED.value, limit),
+                )
 
             rows = cursor.fetchall()
 

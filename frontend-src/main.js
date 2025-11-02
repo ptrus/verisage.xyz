@@ -35,6 +35,15 @@ const errorContainer = document.getElementById('errorContainer');
 const healthBanner = document.getElementById('healthBanner');
 const healthTitle = document.getElementById('healthTitle');
 const healthMessage = document.getElementById('healthMessage');
+const apiDocsLink = document.getElementById('apiDocsLink');
+const apiUrlLink = document.getElementById('apiUrlLink');
+
+// Set API docs link to point to backend.
+apiDocsLink.href = `${API_URL}/docs`;
+
+// Set API URL link in footer.
+apiUrlLink.href = `${API_URL}/docs`;
+apiUrlLink.textContent = API_URL;
 
 // Connect wallet.
 connectButton.addEventListener('click', async () => {
@@ -120,11 +129,7 @@ connectButton.addEventListener('click', async () => {
 
     // Only enable submit button if service is healthy
     submitButton.disabled = !isServiceHealthy;
-
-    console.log('✅ Wallet connected:', currentAccount);
-    console.log('Network:', chain.name);
   } catch (error) {
-    console.error('Error connecting wallet:', error);
     showError(`Failed to connect wallet: ${error.message}`);
   }
 });
@@ -205,13 +210,9 @@ queryForm.addEventListener('submit', async (e) => {
 
     const result = await response.json();
 
-    console.log('✅ Job created:', result);
-
     // Poll for results
     await pollForResults(result.job_id);
   } catch (error) {
-    console.error('Error submitting query:', error);
-
     // Parse error message for better UX.
     let errorMessage = error.message;
 
@@ -259,7 +260,6 @@ async function pollForResults(jobId) {
       const data = await response.json();
 
       if (data.status === 'completed') {
-        console.log('✅ Query completed:', data);
         displayResult(data);
         hideLoading();
         // Only re-enable if wallet is connected.
@@ -278,7 +278,6 @@ async function pollForResults(jobId) {
       };
       loadingMessage.textContent = statusMessages[data.status] || 'Processing your query...';
     } catch (error) {
-      console.error('Error polling results:', error);
       showError(`Failed to get results: ${error.message}`);
       hideLoading();
       // Only re-enable if wallet is connected.
@@ -391,6 +390,7 @@ function displayResult(jobData) {
     html += `
       <div class="llm-response ${llm.error ? 'error' : ''}">
         <h5>${escapeHtml(llm.provider.toUpperCase())}</h5>
+        <p class="model-name"><em>${escapeHtml(llm.model || 'unknown')}</em></p>
         ${
           llm.error
             ? `<p class="error-text">Request failed</p>`
@@ -477,7 +477,6 @@ function formatTimeAgo(timestamp) {
 
   // Check if date is valid.
   if (isNaN(past.getTime())) {
-    console.warn('Invalid timestamp:', timestamp);
     return '';
   }
 
@@ -661,7 +660,9 @@ function fetchRecentResolutions() {
         }
       }
     })
-    .catch((error) => console.error('Error fetching recent resolutions:', error));
+    .catch(() => {
+      // Silently handle error fetching recent resolutions
+    });
 }
 
 function createCollapsedResult(job) {
@@ -816,8 +817,7 @@ async function checkServiceHealth() {
         submitButton.disabled = false;
       }
     }
-  } catch (error) {
-    console.error('Error checking health:', error);
+  } catch {
     // On error, assume healthy to not block users unnecessarily.
     isServiceHealthy = true;
     healthBanner.className = 'health-banner';
@@ -829,7 +829,3 @@ checkServiceHealth();
 
 // Poll health every 30 seconds.
 setInterval(checkServiceHealth, 30000);
-
-console.log('🚀 Verisage Oracle Frontend');
-console.log('API URL:', API_URL);
-console.log('Network:', NETWORK);

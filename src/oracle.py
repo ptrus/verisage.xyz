@@ -40,6 +40,7 @@ class Oracle:
             }
         else:
             # Check which providers have API keys configured.
+            # Filter out None, empty strings, and whitespace-only strings.
             available_providers = {
                 "claude": settings.claude_api_key,
                 "gemini": settings.gemini_api_key,
@@ -48,7 +49,9 @@ class Oracle:
             }
 
             configured_providers = {
-                provider: key for provider, key in available_providers.items() if key
+                provider: key
+                for provider, key in available_providers.items()
+                if key and key.strip()
             }
 
             # Require at least 2 providers for consensus.
@@ -138,6 +141,7 @@ class Oracle:
         except Exception as exc:  # pragma: no cover - defensive guard
             return LLMResponse(
                 provider=provider_name,
+                model="unknown",
                 decision=DecisionType.UNCERTAIN,
                 confidence=0.0,
                 reasoning=f"Error querying {provider_name}: {exc}",

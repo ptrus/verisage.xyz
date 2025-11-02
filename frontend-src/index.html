@@ -975,6 +975,7 @@
           position: static;
           flex-direction: column;
           margin-top: 20px;
+          margin-bottom: 30px;
         }
 
         .header-wallet {
@@ -1001,7 +1002,7 @@
     <div class="container">
       <header>
         <div class="header-top">
-          <a href="/docs" class="api-link" target="_blank">API Docs</a>
+          <a id="apiDocsLink" href="/docs" class="api-link" target="_blank">API Docs</a>
           <div class="header-wallet">
             <button id="connectButton" class="btn wallet-connect-btn">Connect Wallet</button>
             <div id="walletStatus" class="wallet-status">
@@ -1024,8 +1025,8 @@
           <div class="info-box">
             <p>
               Trustless fact verification powered by multiple independent AI providers. Query
-              Claude, Gemini, Perplexity, and OpenAI simultaneously—receive consensus answers with
-              full transparency.
+              Claude, Gemini, and OpenAI simultaneously—receive consensus answers with full
+              transparency.
             </p>
             <p style="margin-top: 12px">
               <strong>Note:</strong> Queries should be answerable with YES/NO. Be specific with
@@ -1035,6 +1036,16 @@
               You can also integrate via
               <a href="/docs" style="color: #10b981; text-decoration: none">API</a> with x402
               payment headers for programmatic access.
+            </p>
+            <p style="margin-top: 12px; font-size: 0.9em; color: #a1a1aa">
+              <strong style="color: #10b981">Trustless & Verifiable:</strong> All responses are
+              cryptographically signed. Running on Oasis ROFL with reproducible builds.
+              <a
+                href="https://github.com/ptrus/verisage.xyz#how-can-i-trust-this-service"
+                target="_blank"
+                style="color: #10b981; text-decoration: none"
+                >Learn how to verify →</a
+              >
             </p>
           </div>
 
@@ -1093,9 +1104,21 @@
 
       <footer>
         <p>Built for Oasis ROFL.</p>
+        <p style="font-size: 0.85em; color: #a1a1aa; margin-top: 8px">
+          API:
+          <a
+            id="apiUrlLink"
+            href=""
+            target="_blank"
+            rel="noopener noreferrer"
+            style="color: #10b981; text-decoration: none; border-bottom: 1px solid transparent"
+            onmouseover="this.style.borderBottomColor='#10b981'"
+            onmouseout="this.style.borderBottomColor='transparent'"
+          ></a>
+        </p>
         <div class="social-links">
           <a
-            href="https://github.com/ptrus/verisage-xyz"
+            href="https://github.com/ptrus/verisage.xyz"
             target="_blank"
             rel="noopener noreferrer"
             class="social-link"
@@ -1121,15 +1144,6 @@
             </svg>
           </a>
         </div>
-        <p style="margin-top: 16px; margin-bottom: 0; font-size: 0.8em">
-          <a
-            href="/docs"
-            class="api-link"
-            target="_blank"
-            style="display: inline-block; padding: 6px 12px; font-size: 0.85em"
-            >API Docs</a
-          >
-        </p>
       </footer>
     </div>
 

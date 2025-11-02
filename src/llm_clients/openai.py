@@ -9,15 +9,15 @@ from src.models import LLMResponse
 class OpenAIClient(BaseLLMClient):
     """Client for OpenAI API."""
 
-    def __init__(self, api_key: str, model: str = "gpt-4o-mini"):
+    def __init__(self, api_key: str, model: str = "gpt-4o"):
         """Initialize OpenAI client.
 
         Args:
             api_key: OpenAI API key
-            model: OpenAI model name (must support web_search tool for real-time grounding)
+            model: OpenAI model name (use gpt-5 for Responses API with web search)
         """
-        super().__init__(api_key, "openai")
-        self.api_url = "https://api.openai.com/v1/chat/completions"
+        super().__init__(api_key, "openai", model)
+        self.api_url = "https://api.openai.com/v1/responses"
         self.model = model
         # Configure web-search tool to support real-time grounding data.
         self.tools = [{"type": "web_search"}]
@@ -39,16 +39,12 @@ class OpenAIClient(BaseLLMClient):
                 "Content-Type": "application/json",
             }
 
+            # Responses API uses "instructions" and "input" instead of "messages"
             payload = {
                 "model": self.model,
                 "tools": self.tools,
-                "tool_choice": "auto",
-                "messages": [
-                    {"role": "system", "content": self._system_prompt()},
-                    {"role": "user", "content": dispute_prompt},
-                ],
-                "max_tokens": 1024,
-                "temperature": 0.2,
+                "instructions": self._system_prompt(),
+                "input": dispute_prompt,
             }
 
             async with httpx.AsyncClient(timeout=120.0) as client:
@@ -56,11 +52,20 @@ class OpenAIClient(BaseLLMClient):
                 response.raise_for_status()
                 data = response.json()
 
-            raw_response = data["choices"][0]["message"]["content"]
+            # Responses API returns content in output array
+            # Find the message object and extract the text
+            raw_response = ""
+            for item in data.get("output", []):
+                if item.get("type") == "message" and item.get("status") == "completed":
+                    content = item.get("content", [])
+                    if content and content[0].get("type") == "output_text":
+                        raw_response = content[0].get("text", "")
+                        break
             decision, confidence, reasoning = self._parse_response(raw_response)
 
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model,
                 decision=decision,
                 confidence=confidence,
                 reasoning=reasoning,
@@ -68,9 +73,22 @@ class OpenAIClient(BaseLLMClient):
                 error=None,
             )
 
+        except httpx.HTTPStatusError as e:
+            # Get the error details from the response
+            error_detail = e.response.text if hasattr(e, "response") else str(e)
+            return LLMResponse(
+                provider=self.provider_name,
+                model=self.model,
+                decision="uncertain",
+                confidence=0.0,
+                reasoning=f"Error querying OpenAI: {str(e)} - {error_detail}",
+                raw_response="",
+                error=f"{str(e)} - {error_detail}",
+            )
         except Exception as e:
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model,
                 decision="uncertain",
                 confidence=0.0,
                 reasoning=f"Error querying OpenAI: {str(e)}",

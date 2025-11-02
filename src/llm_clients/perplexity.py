@@ -1,6 +1,6 @@
 """Perplexity AI LLM client implementation."""
 
-import httpx
+from perplexity import AsyncPerplexity
 
 from src.llm_clients.base import BaseLLMClient
 from src.models import LLMResponse
@@ -16,8 +16,8 @@ class PerplexityClient(BaseLLMClient):
             api_key: Perplexity API key
             model: Perplexity model name (sonar models have built-in real-time web search)
         """
-        super().__init__(api_key, "perplexity")
-        self.api_url = "https://api.perplexity.ai/chat/completions"
+        super().__init__(api_key, "perplexity", model)
+        self.client = AsyncPerplexity(api_key=api_key)
         self.model = model
 
     async def query(self, prompt: str) -> LLMResponse:
@@ -32,32 +32,25 @@ class PerplexityClient(BaseLLMClient):
         try:
             dispute_prompt = self._create_dispute_prompt(prompt)
 
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-            }
-
-            payload = {
-                "model": self.model,
-                "enable_search_classifier": True,
-                "messages": [
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
                     {"role": "system", "content": self._system_prompt()},
                     {"role": "user", "content": dispute_prompt},
                 ],
-                "max_tokens": 1024,
-                "temperature": 0.2,
-            }
+                search_mode="web",
+                enable_search_classifier=True,
+                web_search_options={
+                    "search_type": "pro",
+                },
+            )
 
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                response = await client.post(self.api_url, json=payload, headers=headers)
-                response.raise_for_status()
-                data = response.json()
-
-            raw_response = data["choices"][0]["message"]["content"]
+            raw_response = response.choices[0].message.content
             decision, confidence, reasoning = self._parse_response(raw_response)
 
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model,
                 decision=decision,
                 confidence=confidence,
                 reasoning=reasoning,
@@ -68,6 +61,7 @@ class PerplexityClient(BaseLLMClient):
         except Exception as e:
             return LLMResponse(
                 provider=self.provider_name,
+                model=self.model,
                 decision="uncertain",
                 confidence=0.0,
                 reasoning=f"Error querying Perplexity: {str(e)}",

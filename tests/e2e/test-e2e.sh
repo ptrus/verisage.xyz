@@ -105,11 +105,13 @@ while [ $POLL_COUNT -lt $MAX_POLLS ]; do
                 fi
 
                 echo ""
-                echo -e "${GREEN}=== E2E TEST PASSED ===${NC}"
+                echo -e "${GREEN}Job validation passed${NC}"
                 echo ""
                 echo "Full result:"
                 echo "$RESULT" | python3 -m json.tool 2>/dev/null || echo "$RESULT"
-                exit 0
+
+                # Continue to test /recent endpoint
+                break
             else
                 echo -e "${RED}✗ Missing required fields in result${NC}"
                 echo "Result: $RESULT"
@@ -129,6 +131,53 @@ while [ $POLL_COUNT -lt $MAX_POLLS ]; do
     sleep $POLL_INTERVAL
 done
 
-echo -e "${RED}✗ Job did not complete within expected time${NC}"
-echo "Last response: $RESULT"
-exit 1
+# If we get here, the job didn't complete in time
+if [ "$STATUS" != "completed" ]; then
+    echo -e "${RED}✗ Job did not complete within expected time${NC}"
+    echo "Last response: $RESULT"
+    exit 1
+fi
+
+echo ""
+echo "6. Testing /recent endpoint..."
+
+# Test with default parameters (exclude_uncertain=true, limit=5)
+echo "  Testing with default parameters (exclude_uncertain=true, limit=5)..."
+RECENT_DEFAULT=$(curl -s http://localhost:$PORT/api/v1/recent)
+RECENT_COUNT=$(echo "$RECENT_DEFAULT" | grep -o '"id":"[^"]*"' | wc -l)
+echo "  Found $RECENT_COUNT jobs in default response"
+
+# Test with exclude_uncertain=false
+echo "  Testing with exclude_uncertain=false..."
+RECENT_WITH_UNCERTAIN=$(curl -s "http://localhost:$PORT/api/v1/recent?exclude_uncertain=false")
+UNCERTAIN_COUNT=$(echo "$RECENT_WITH_UNCERTAIN" | grep -o '"id":"[^"]*"' | wc -l)
+echo "  Found $UNCERTAIN_COUNT jobs when including uncertain results"
+
+# Test with different limits
+echo "  Testing with limit=1 and exclude_uncertain=true..."
+RECENT_LIMIT_1=$(curl -s "http://localhost:$PORT/api/v1/recent?limit=1&exclude_uncertain=true")
+LIMIT_1_COUNT=$(echo "$RECENT_LIMIT_1" | grep -o '"id":"[^"]*"' | wc -l)
+echo "  Found $LIMIT_1_COUNT jobs with limit=1"
+
+if [ $LIMIT_1_COUNT -le 1 ]; then
+    echo -e "${GREEN}Limit parameter working correctly${NC}"
+else
+    echo -e "${RED}Limit parameter not working correctly (expected max 1, got $LIMIT_1_COUNT)${NC}"
+    exit 1
+fi
+
+echo "  Testing with limit=10 and exclude_uncertain=false..."
+RECENT_LIMIT_10=$(curl -s "http://localhost:$PORT/api/v1/recent?limit=10&exclude_uncertain=false")
+LIMIT_10_COUNT=$(echo "$RECENT_LIMIT_10" | grep -o '"id":"[^"]*"' | wc -l)
+echo "  Found $LIMIT_10_COUNT jobs with limit=10"
+
+if [ $LIMIT_10_COUNT -le 10 ]; then
+    echo -e "${GREEN}Limit parameter working correctly${NC}"
+else
+    echo -e "${RED}Limit parameter not working correctly (expected max 10, got $LIMIT_10_COUNT)${NC}"
+    exit 1
+fi
+
+echo ""
+echo -e "${GREEN}=== E2E TEST PASSED ===${NC}"
+exit 0

@@ -39,6 +39,7 @@ REASONING: This is a mock response for testing purposes. The mock oracle always 
 
         return LLMResponse(
             provider=self.provider_name,
+            model="mock",
             decision=DecisionType.YES,
             confidence=0.85,
             reasoning="This is a mock response for testing purposes. The mock oracle always returns YES with 85% confidence after a 5-second delay to simulate real API behavior.",

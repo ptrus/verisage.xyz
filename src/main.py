@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
@@ -98,6 +99,32 @@ tags_metadata = [
     },
 ]
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    health_task = None
+    if settings.debug_payments or settings.debug_mock:
+        logger.warning("=" * 80)
+        if settings.debug_payments:
+            logger.warning("WARNING: Running with DEBUG_PAYMENTS=true - NO PAYMENT REQUIRED!")
+        if settings.debug_mock:
+            logger.warning("WARNING: Running with DEBUG_MOCK=true - USING MOCK LLM CLIENTS!")
+        logger.warning("=" * 80)
+
+    # Start background task for health status updates.
+    health_task = asyncio.create_task(update_health_status_periodically())
+
+    try:
+        yield
+    finally:
+        if health_task:
+            health_task.cancel()
+            try:
+                await health_task
+            except asyncio.CancelledError:
+                pass
+
+
 # Configure FastAPI application.
 app = FastAPI(
     title="Verisage",
@@ -114,6 +141,7 @@ app = FastAPI(
         "syntaxHighlight.theme": "nord",
         "defaultModelsExpandDepth": 1,
     },
+    lifespan=lifespan,
 )
 
 
@@ -190,22 +218,6 @@ async def update_health_status_periodically():
             }
 
 
-# Startup event - warn about debug modes and start background tasks.
-@app.on_event("startup")
-async def startup_checks():
-    """Log warnings for debug modes and start background tasks."""
-    if settings.debug_payments or settings.debug_mock:
-        logger.warning("=" * 80)
-        if settings.debug_payments:
-            logger.warning("WARNING: Running with DEBUG_PAYMENTS=true - NO PAYMENT REQUIRED!")
-        if settings.debug_mock:
-            logger.warning("WARNING: Running with DEBUG_MOCK=true - USING MOCK LLM CLIENTS!")
-        logger.warning("=" * 80)
-
-    # Start background task for health status updates.
-    asyncio.create_task(update_health_status_periodically())
-
-
 # Mount static files.
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -267,9 +279,12 @@ if not settings.debug_payments:
         # Ensure CORS headers are on 402 responses.
         if response.status_code == 402:
             origin = request.headers.get("origin")
-            if origin in settings.get_cors_origins():
+            allowed_origins = settings.get_cors_origins()
+            if origin and origin in allowed_origins:
                 response.headers["Access-Control-Allow-Origin"] = origin
                 response.headers["Access-Control-Allow-Credentials"] = "true"
+                response.headers["Access-Control-Allow-Methods"] = "*"
+                response.headers["Access-Control-Allow-Headers"] = "*"
         return response
 
 
@@ -288,8 +303,6 @@ async def custom_swagger_ui_html():
     html_str = html_str.replace("</head>", f"<style>{CUSTOM_SWAGGER_CSS}</style></head>")
 
     return HTMLResponse(content=html_str)
-
-
 
 
 @api_v1.post("/query", response_model=JobResponse, tags=["Oracle (Paid)"])
@@ -334,14 +347,22 @@ async def query_oracle(query: OracleQuery, request: Request) -> JobResponse:
     network = None
 
     try:
+        # Extract payment info from x402 middleware
         if hasattr(request.state, "verify_response"):
-            payer_address = request.state.verify_response.payer
-            tx_hash = request.state.verify_response.tx_hash
+            verify_resp = request.state.verify_response
+            if hasattr(verify_resp, "payer"):
+                payer_address = verify_resp.payer
+
         if hasattr(request.state, "payment_details"):
-            network = request.state.payment_details.network
-    except Exception:
+            payment_details = request.state.payment_details
+            if hasattr(payment_details, "network"):
+                network = payment_details.network
+
+        # Note: tx_hash is not available from x402 verify response
+        # It would only be available in SettleResponse which happens after settlement
+    except Exception as e:
         # If payment info extraction fails, continue without it.
-        pass
+        logger.warning(f"Failed to extract payment info: {e}", exc_info=True)
 
     job_id, created_at = job_store.create_job(
         query.query,
@@ -408,7 +429,7 @@ async def get_query_result(job_id: str, request: Request) -> JobResultResponse:
 
 @api_v1.get("/recent", tags=["Public Feed"])
 @limiter.limit("100/minute")
-async def get_recent_jobs(request: Request, limit: int = 5):
+async def get_recent_jobs(request: Request, limit: int = 5, exclude_uncertain: bool = True):
     """Get recently completed jobs (public feed).
 
     Results include cryptographic signatures generated inside the ROFL TEE. The public key
@@ -416,6 +437,7 @@ async def get_recent_jobs(request: Request, limit: int = 5):
 
     Args:
         limit: Maximum number of jobs to return (default: 5, max: 20)
+        exclude_uncertain: Exclude jobs with uncertain results (default: True)
 
     Returns:
         List of recent completed jobs with results (including signatures and public keys)
@@ -423,7 +445,7 @@ async def get_recent_jobs(request: Request, limit: int = 5):
     # Limit to max 20 to prevent abuse.
     limit = min(limit, 20)
 
-    jobs_data = job_store.get_recent_completed_jobs(limit)
+    jobs_data = job_store.get_recent_completed_jobs(limit, exclude_uncertain)
 
     jobs = []
     for job_data in jobs_data:
