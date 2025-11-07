@@ -63,6 +63,7 @@ class Settings(BaseSettings):
     agent0_ipfs_provider: str = "pinata"
     agent0_pinata_jwt: str | None = None
     agent0_wallet_address: str | None = None
+    agent0_force_reregister: bool = False  # Force agent re-registration (ignore existing agent ID).
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,6 +1,6 @@
 services:
   server:
-    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:528100c0e0a1472d48e28a5c3f68706f565a6c4e190bf11a93d6f56207ac5406
+    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:db183ea3ac77267da40c41a34c340b561a48c165887a3ef13655a5eca0bdfea5
     container_name: verisage-server
     command: ./start-server.sh
     ports:
@@ -25,13 +25,14 @@ services:
       - AGENT0_IPFS_PROVIDER=${AGENT0_IPFS_PROVIDER:-pinata}
       - AGENT0_PINATA_JWT=${AGENT0_PINATA_JWT:-}
       - AGENT0_WALLET_ADDRESS=${AGENT0_WALLET_ADDRESS:-}
+      - AGENT0_FORCE_REREGISTER=${AGENT0_FORCE_REREGISTER:-false}
       - DATA_DIR=/app/data
     volumes:
       - /run/rofl-appd.sock:/run/rofl-appd.sock
       - db-data:/app/data
     restart: unless-stopped
   worker:
-    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:528100c0e0a1472d48e28a5c3f68706f565a6c4e190bf11a93d6f56207ac5406
+    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:db183ea3ac77267da40c41a34c340b561a48c165887a3ef13655a5eca0bdfea5
     container_name: verisage-worker
     command: ./start-worker.sh
     environment:

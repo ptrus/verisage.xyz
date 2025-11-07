@@ -77,6 +77,7 @@ async def initialize_agent(
     agent_image: str,
     agent_wallet_address: str | None,
     x402_endpoint_url: str,
+    force_reregister: bool = False,
 ) -> tuple[object | None, object | None]:
     """Initialize Agent0 SDK and register agent.
 
@@ -91,6 +92,7 @@ async def initialize_agent(
         agent_image: URL to agent image/logo
         agent_wallet_address: Optional wallet address for receiving payments
         x402_endpoint_url: x402 payment endpoint URL
+        force_reregister: Force new agent registration (ignore existing agent ID)
 
     Returns:
         Tuple of (sdk, agent) instances, or (None, None) if not configured
@@ -119,12 +121,16 @@ async def initialize_agent(
 
         # Load or create agent.
         initialized_agent = None
-        if existing_agent_id:
+        if existing_agent_id and not force_reregister:
             try:
                 logger.info(f"Loading existing agent: {existing_agent_id}")
                 initialized_agent = initialized_sdk.loadAgent(existing_agent_id)
             except Exception as e:
                 logger.warning(f"Could not load existing agent: {e}")
+        elif force_reregister and existing_agent_id:
+            logger.info(
+                f"Force re-registration enabled - ignoring existing agent ID: {existing_agent_id}"
+            )
 
         if not initialized_agent:
             logger.info("Creating new agent...")
@@ -168,10 +174,15 @@ async def initialize_agent(
         logger.info(f"Agent registered successfully: {initialized_agent.agentId}")
 
         # Save agent ID to database for future use.
-        if initialized_agent.agentId and not existing_agent_id:
+        # Update if force_reregister is enabled or if there's no existing agent ID.
+        if initialized_agent.agentId and (not existing_agent_id or force_reregister):
             from src.job_store import job_store
 
             job_store.set_metadata_key(AGENT_ID_METADATA_FIELD, initialized_agent.agentId)
+            if force_reregister and existing_agent_id:
+                logger.info(
+                    f"Updated agent ID from {existing_agent_id} to {initialized_agent.agentId}"
+                )
 
         return initialized_sdk, initialized_agent
 

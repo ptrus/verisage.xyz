@@ -138,7 +138,8 @@ async def lifespan(app: FastAPI):
                     agent_description=app.description,
                     agent_image="https://raw.githubusercontent.com/ptrus/verisage.xyz/master/static/logo.png",
                     agent_wallet_address=settings.agent0_wallet_address,
-                    x402_endpoint_url=f"https://verisage.xyz{app.root_path}/api/v1/query",
+                    x402_endpoint_url=f"https://api.verisage.xyz{app.root_path}/api/v1/query",
+                    force_reregister=settings.agent0_force_reregister,
                 )
             except Exception as e:
                 logger.error(f"Agent initialization failed: {e}", exc_info=True)
@@ -173,7 +174,7 @@ async def lifespan(app: FastAPI):
 
 # Configure FastAPI application.
 app = FastAPI(
-    title="Verisage",
+    title="Verisage.xyz",
     description=(
         "Verifiable Multi-LLM Truth Oracle running on Oasis ROFL. "
         "Trustless fact verification powered by multiple independent AI providers (Claude, Gemini, OpenAI). "
