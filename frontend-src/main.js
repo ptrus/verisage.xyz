@@ -996,6 +996,13 @@ function createCollapsedResult(job) {
               .map((response) => {
                 const errorClass = response.error ? 'error' : '';
                 const providerLabel = escapeHtml((response.provider || '').toUpperCase());
+
+                // Handle both tweet (verdict/analysis) and fact (decision/reasoning) responses
+                const llmDecision = response.verdict || response.decision;
+                const llmReasoning = response.analysis || response.reasoning;
+                const decisionLabel = isTweetResult ? 'Verdict' : 'Decision';
+                const reasoningLabel = isTweetResult ? 'Analysis' : 'Reasoning';
+
                 return `
                 <div class="llm-response ${errorClass}">
                   <h5>${providerLabel}</h5>
@@ -1003,9 +1010,9 @@ function createCollapsedResult(job) {
                     response.error
                       ? `<p class="error-text">Request failed</p>`
                       : `
-                      <p><strong>Decision:</strong> ${response.decision.toUpperCase()}</p>
+                      <p><strong>${decisionLabel}:</strong> ${llmDecision.toUpperCase()}</p>
                       <p><strong>Confidence:</strong> ${(response.confidence * 100).toFixed(1)}%</p>
-                      <p><strong>Reasoning:</strong> ${escapeHtml(response.reasoning)}</p>
+                      <p><strong>${reasoningLabel}:</strong> ${escapeHtml(llmReasoning)}</p>
                     `
                   }
                 </div>
