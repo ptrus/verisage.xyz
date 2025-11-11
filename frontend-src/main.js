@@ -983,25 +983,29 @@ function fetchRecentResolutions(queryType = null) {
 }
 
 // Event delegation for rendering tweet embeds when details are opened
-document.addEventListener('toggle', (e) => {
-  if (e.target.classList.contains('recent-result') && e.target.open) {
-    const jobId = e.target.getAttribute('data-job-id');
-    const resultType = e.target.getAttribute('data-type');
+document.addEventListener(
+  'toggle',
+  (e) => {
+    if (e.target.classList.contains('recent-result') && e.target.open) {
+      const jobId = e.target.getAttribute('data-job-id');
+      const resultType = e.target.getAttribute('data-type');
 
-    // Only render tweet embed for tweet type results
-    if (resultType === 'tweet' && jobId) {
-      // Find the tweet URL from the query text
-      const queryText = e.target.querySelector('.query-text');
-      if (queryText) {
-        const tweetUrl = queryText.textContent.trim();
-        // Check if it looks like a tweet URL
-        if (tweetUrl.includes('x.com') || tweetUrl.includes('twitter.com')) {
-          renderTweetEmbed(tweetUrl, `tweet-embed-recent-${jobId}`);
+      // Only render tweet embed for tweet type results
+      if (resultType === 'tweet' && jobId) {
+        // Find the tweet URL from the query text
+        const queryText = e.target.querySelector('.query-text');
+        if (queryText) {
+          const tweetUrl = queryText.textContent.trim();
+          // Check if it looks like a tweet URL
+          if (tweetUrl.includes('x.com') || tweetUrl.includes('twitter.com')) {
+            renderTweetEmbed(tweetUrl, `tweet-embed-recent-${jobId}`);
+          }
         }
       }
     }
-  }
-}, true);
+  },
+  true
+);
 
 function createCollapsedResult(job) {
   if (!job.result) return '';
