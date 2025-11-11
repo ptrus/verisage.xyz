@@ -31,6 +31,8 @@ jobs:
 
       - name: Setup Oasis CLI
         uses: oasisprotocol/setup-cli-action@0.0.2
+        with:
+          version: '0.17.0'
 
       - name: Install qemu-utils
         run: sudo apt-get update && sudo apt-get install -y qemu-utils
