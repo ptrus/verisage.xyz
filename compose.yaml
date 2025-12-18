@@ -1,6 +1,6 @@
 services:
   server:
-    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:e500dda4a5a43f9882226a5cd6358df3fa373bdecff44c9df232d33801b92daa
+    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:a0648beb7899b22bd6feed771d77b4d4d798dd339db7afb4d9dedd5d027dc291
     container_name: verisage-server
     command: ./start-server.sh
     ports:
@@ -33,7 +33,7 @@ services:
       - db-data:/app/data
     restart: unless-stopped
   worker:
-    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:e500dda4a5a43f9882226a5cd6358df3fa373bdecff44c9df232d33801b92daa
+    image: ghcr.io/ptrus/verisage.xyz:latest@sha256:a0648beb7899b22bd6feed771d77b4d4d798dd339db7afb4d9dedd5d027dc291
     container_name: verisage-worker
     command: ./start-worker.sh
     environment:
