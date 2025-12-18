@@ -127,9 +127,11 @@ class Oracle:
             TooManyAgentsFailedError: If more than 2 API agents fail
         """
         # Query all LLMs in parallel with per-provider error isolation.
+        # Exclude Grok from fact verification (only used for tweet analysis).
         tasks = [
             self._safe_query(provider_name, client, query)
             for provider_name, client in self.clients.items()
+            if provider_name != "grok"
         ]
         responses: list[LLMResponse] = await asyncio.gather(*tasks, return_exceptions=False)
 
